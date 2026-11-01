@@ -160,6 +160,18 @@ public class SpeedTestItem
 }
 
 [Serializable]
+public class SubSpeedTestItem
+{
+    public string SubId { get; set; }
+
+    /// <summary>每订阅专属延迟测速 URL（经节点访问）；留空/未设置时回退到全局 SpeedPingTestUrl。</summary>
+    public string? SpeedPingTestUrl { get; set; }
+
+    /// <summary>每订阅专属带宽测速下载 URL；留空/未设置时回退到全局 SpeedTestUrl。</summary>
+    public string? SpeedTestUrl { get; set; }
+}
+
+[Serializable]
 public class RoutingBasicItem
 {
     public string DomainStrategy { get; set; }

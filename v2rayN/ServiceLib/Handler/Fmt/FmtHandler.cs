@@ -18,6 +18,7 @@ public class FmtHandler
                 EConfigType.Hysteria2 => Hysteria2Fmt.ToUri(item),
                 EConfigType.TUIC => TuicFmt.ToUri(item),
                 EConfigType.WireGuard => WireguardFmt.ToUri(item),
+                EConfigType.HTTP => HttpFmt.ToUri(item),
                 _ => null,
             };
 
@@ -74,6 +75,10 @@ public class FmtHandler
             else if (str.StartsWith(Global.ProtocolShares[EConfigType.WireGuard]))
             {
                 return WireguardFmt.Resolve(str, out msg);
+            }
+            else if (str.StartsWith(Global.HttpProtocol) || str.StartsWith(Global.HttpsProtocol))
+            {
+                return HttpFmt.Resolve(str, out msg);
             }
             else
             {

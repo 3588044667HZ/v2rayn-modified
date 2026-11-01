@@ -18,7 +18,7 @@
                 DockPanel.Dock="Right">
                 <TextBlock x:Name="txtSpeedProxyDisplay" HorizontalAlignment="Right" />
                 <Border Margin="1" />
-                <TextBlock x:Name="txtSpeedDirectDisplay" HorizontalAlignment="Right" />
+                <TextBlock x:Name="txtSpeedInboundDisplay" HorizontalAlignment="Right" />
             </StackPanel>
 
             <StackPanel

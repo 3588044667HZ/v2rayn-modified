@@ -10,6 +10,8 @@ internal class V2rayMetricsVars
 public class V2rayMetricsVarsStats
 {
     public Hashtable? outbound { get; set; }
+
+    public Hashtable? inbound { get; set; }
 }
 
 public class V2rayMetricsVarsLink

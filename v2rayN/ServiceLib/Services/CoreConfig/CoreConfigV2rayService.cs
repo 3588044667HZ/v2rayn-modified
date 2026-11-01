@@ -1209,6 +1209,8 @@ public class CoreConfigV2rayService
 
             policySystemSetting.statsOutboundDownlink = true;
             policySystemSetting.statsOutboundUplink = true;
+            policySystemSetting.statsInboundDownlink = true;
+            policySystemSetting.statsInboundUplink = true;
             policyObj.system = policySystemSetting;
             v2rayConfig.policy = policyObj;
 

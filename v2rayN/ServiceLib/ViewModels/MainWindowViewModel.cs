@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Reactive;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
@@ -612,4 +613,145 @@ public class MainWindowViewModel : MyReactiveObject
     }
 
     #endregion Presets
+
+    #region 自动化控制（供本地 HTTP / 爬虫调用）
+
+    /// <summary>
+    /// 读取可测速节点（按订阅过滤）。用于外部自动选择前的列表查询。
+    /// </summary>
+    public async Task<object> GetAutoTestNodes(string? subid)
+    {
+        var lst = await LoadAutoTestProfilesAsync(subid);
+        var nodes = lst.Select(x => new Dictionary<string, object?>
+        {
+            ["indexId"] = x.IndexId,
+            ["remarks"] = x.Remarks,
+            ["address"] = x.Address,
+            ["port"] = x.Port,
+            ["configType"] = x.ConfigType.ToString(),
+            ["subid"] = x.Subid,
+        }).ToList();
+        return new Dictionary<string, object?> { ["total"] = lst.Count, ["nodes"] = nodes };
+    }
+
+    /// <summary>
+    /// 对目标节点集执行测速并自动把最优节点设为活动服务器（必要时重启内核）。
+    /// action: Realping | Speedtest | Mixedtest | Tcping
+    /// </summary>
+    public async Task<object> AutoPickBestServerAsync(string? subid, string action = "Realping")
+    {
+        var lst = await LoadAutoTestProfilesAsync(subid);
+        if (lst.Count == 0)
+        {
+            return new Dictionary<string, object?> { ["ok"] = false, ["msg"] = "无可测速节点" };
+        }
+        if (!Enum.TryParse(action, true, out ESpeedActionType actType))
+        {
+            actType = ESpeedActionType.Realping;
+        }
+
+        // 测速结果收集器；SpeedtestService 在跑完后会回调一次 IndexId 为空的结束事件
+        var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var results = new ConcurrentDictionary<string, (string delay, string speed)>();
+        var svc = new SpeedtestService(_config, r =>
+        {
+            if (r.IndexId.IsNullOrEmpty())
+            {
+                tcs.TrySetResult(true);
+            }
+            else if (r.IndexId.IsNotEmpty())
+            {
+                results[r.IndexId!] = (r.Delay ?? "", r.Speed ?? "");
+            }
+        });
+        svc.RunLoop(actType, lst);
+
+        try
+        {
+            await tcs.Task.WaitAsync(TimeSpan.FromSeconds(200));
+        }
+        catch (TimeoutException)
+        {
+            svc.ExitLoop();
+        }
+
+        // 选优：延迟>0 取最小；延迟并列再比带宽
+        string? best = null;
+        var bestDelay = int.MaxValue;
+        decimal bestSpeed = -1;
+        foreach (var p in lst)
+        {
+            if (!results.TryGetValue(p.IndexId, out var v))
+            {
+                continue;
+            }
+            if (!int.TryParse(v.delay, out var delay) || delay <= 0)
+            {
+                continue;
+            }
+            var speed = decimal.TryParse(v.speed, out var sp) ? sp : 0;
+            if (delay < bestDelay || (delay == bestDelay && speed > bestSpeed))
+            {
+                bestDelay = delay;
+                bestSpeed = speed;
+                best = p.IndexId;
+            }
+        }
+
+        if (best.IsNullOrEmpty())
+        {
+            return new Dictionary<string, object?> { ["ok"] = false, ["msg"] = "全部节点测速失败" };
+        }
+
+        if (best != _config.IndexId)
+        {
+            if (await ConfigHandler.SetDefaultServerIndex(_config, best) != 0)
+            {
+                return new Dictionary<string, object?> { ["ok"] = false, ["msg"] = "设置活动服务器失败" };
+            }
+            await Reload();
+        }
+        var item = lst.FirstOrDefault(x => x.IndexId == best);
+        return new Dictionary<string, object?>
+        {
+            ["ok"] = true,
+            ["indexId"] = best,
+            ["remarks"] = item?.Remarks,
+            ["address"] = item?.Address,
+            ["port"] = item?.Port,
+            ["delayMs"] = bestDelay,
+            ["speedKBs"] = bestSpeed >= 0 ? bestSpeed : 0,
+            ["testedCount"] = lst.Count,
+            ["total"] = lst.Count,
+        };
+    }
+
+    /// <summary>当前活动服务器与本地端口（供爬虫确定出口）。</summary>
+    public async Task<object> GetAutoStatus()
+    {
+        var node = await AppHandler.Instance.GetProfileItem(_config.IndexId);
+        var socksPort = _config.Inbound?.FirstOrDefault(x => x.Protocol == "socks")?.LocalPort ?? 0;
+        var httpPort = _config.Inbound?.FirstOrDefault(x => x.Protocol == "http")?.LocalPort ?? 0;
+        return new Dictionary<string, object?>
+        {
+            ["running"] = _config.RunningCoreType != default(ECoreType),
+            ["indexId"] = _config.IndexId,
+            ["remarks"] = node?.Remarks,
+            ["address"] = node?.Address,
+            ["port"] = node?.Port,
+            ["subid"] = node?.Subid,
+            ["socksPort"] = socksPort,
+            ["httpPort"] = httpPort,
+        };
+    }
+
+    private async Task<List<ProfileItem>> LoadAutoTestProfilesAsync(string? subid)
+    {
+        var all = await SQLiteHelper.Instance.TableAsync<ProfileItem>()
+            .Where(t => t.ConfigType != EConfigType.Custom && t.Port > 0)
+            .ToListAsync();
+        return subid.IsNullOrEmpty() ? all : all.Where(t => t.Subid == subid).ToList();
+    }
+
+    #endregion 自动化控制（供本地 HTTP / 爬虫调用）
 }

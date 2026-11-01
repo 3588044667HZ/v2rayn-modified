@@ -2122,6 +2122,24 @@ namespace ServiceLib.Resx {
         }
         
         /// <summary>
+        ///   查找类似 Up 的本地化字符串。
+        /// </summary>
+        public static string SpeedUp {
+            get {
+                return ResourceManager.GetString("SpeedUp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Down 的本地化字符串。
+        /// </summary>
+        public static string SpeedDown {
+            get {
+                return ResourceManager.GetString("SpeedDown", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 Testing... 的本地化字符串。
         /// </summary>
         public static string Speedtesting {

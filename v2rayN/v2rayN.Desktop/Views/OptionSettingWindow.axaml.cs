@@ -67,7 +67,7 @@ public partial class OptionSettingWindow : ReactiveWindow<OptionSettingViewModel
             cmbCoreType9.Items.Add(it);
         });
 
-        for (var i = 2; i <= 8; i++)
+        for (var i = 2; i <= 40; i++)
         {
             cmbMixedConcurrencyCount.Items.Add(i);
         }

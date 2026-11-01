@@ -9,6 +9,14 @@ public class SubEditViewModel : MyReactiveObject
     [Reactive]
     public SubItem SelectedSource { get; set; }
 
+    /// <summary>本订阅专属延迟测速 URL（留空用全局）。</summary>
+    [Reactive]
+    public string? SubPingTestUrl { get; set; }
+
+    /// <summary>本订阅专属带宽测速 URL（留空用全局）。</summary>
+    [Reactive]
+    public string? SubSpeedTestUrl { get; set; }
+
     public ReactiveCommand<Unit, Unit> SaveCmd { get; }
 
     public SubEditViewModel(SubItem subItem, Func<EViewAction, object?, Task<bool>>? updateView)
@@ -22,6 +30,9 @@ public class SubEditViewModel : MyReactiveObject
         });
 
         SelectedSource = subItem.Id.IsNullOrEmpty() ? subItem : JsonUtils.DeepCopy(subItem);
+        var urls = ConfigHandler.GetSubSpeedTestUrls(_config, subItem.Id);
+        SubPingTestUrl = urls.PingTestUrl;
+        SubSpeedTestUrl = urls.SpeedTestUrl;
     }
 
     private async Task SaveSubAsync()
@@ -50,7 +61,7 @@ public class SubEditViewModel : MyReactiveObject
             }
         }
 
-        if (await ConfigHandler.AddSubItem(_config, SelectedSource) == 0)
+        if (await ConfigHandler.AddSubItem(_config, SelectedSource, SubPingTestUrl, SubSpeedTestUrl) == 0)
         {
             NoticeHandler.Instance.Enqueue(ResUI.OperationSuccess);
             _updateView?.Invoke(EViewAction.CloseWindow, null);

@@ -251,6 +251,37 @@
                     VerticalAlignment="Center"
                     TextWrapping="Wrap" />
 
+                <TextBlock
+                    Grid.Row="13"
+                    Grid.Column="0"
+                    Margin="{StaticResource Margin4}"
+                    VerticalAlignment="Center"
+                    Text="延迟测速 URL（订阅级）" />
+                <TextBox
+                    x:Name="txtSubPingTestUrl"
+                    Grid.Row="13"
+                    Grid.Column="1"
+                    Margin="{StaticResource Margin4}"
+                    VerticalAlignment="Center"
+                    Watermark="留空则使用全局设置"
+                    TextWrapping="Wrap"
+                    ToolTip.Tip="经该订阅节点访问的延迟测速地址；国际订阅推荐 https://www.gstatic.com/generate_204，国内订阅推荐 https://www.baidu.com 等；留空则使用全局设置" />
+
+                <TextBlock
+                    Grid.Row="14"
+                    Grid.Column="0"
+                    Margin="{StaticResource Margin4}"
+                    VerticalAlignment="Center"
+                    Text="带宽测速 URL（订阅级）" />
+                <TextBox
+                    x:Name="txtSubSpeedTestUrl"
+                    Grid.Row="14"
+                    Grid.Column="1"
+                    Margin="{StaticResource Margin4}"
+                    VerticalAlignment="Center"
+                    Watermark="留空则使用全局设置"
+                    TextWrapping="Wrap"
+                    ToolTip.Tip="经该订阅节点下载测速的地址；留空则使用全局设置" />
             </Grid>
         </ScrollViewer>
     </DockPanel>

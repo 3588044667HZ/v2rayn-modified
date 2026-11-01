@@ -30,7 +30,7 @@
                         Style="{StaticResource StatusbarItem}" />
                     <Border Margin="1" />
                     <TextBlock
-                        x:Name="txtSpeedDirectDisplay"
+                        x:Name="txtSpeedInboundDisplay"
                         HorizontalAlignment="Right"
                         Style="{StaticResource StatusbarItem}" />
                 </StackPanel>

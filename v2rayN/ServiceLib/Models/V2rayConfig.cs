@@ -34,6 +34,8 @@ public class SystemPolicy4Ray
 {
     public bool statsOutboundUplink { get; set; }
     public bool statsOutboundDownlink { get; set; }
+    public bool statsInboundUplink { get; set; }
+    public bool statsInboundDownlink { get; set; }
 }
 
 public class Log4Ray

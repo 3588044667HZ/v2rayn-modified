@@ -54,34 +54,65 @@ public class StatisticsXrayService
         try
         {
             var source = JsonUtils.Deserialize<V2rayMetricsVars>(result);
-            if (source?.stats?.outbound == null)
+            if (source?.stats == null)
             {
                 return null;
             }
 
             ServerSpeedItem server = new();
-            foreach (var key in source.stats.outbound.Keys.Cast<string>())
+            if (source.stats.outbound != null)
             {
-                var value = source.stats.outbound[key];
-                if (value == null)
+                foreach (var key in source.stats.outbound.Keys.Cast<string>())
                 {
-                    continue;
-                }
-                var state = JsonUtils.Deserialize<V2rayMetricsVarsLink>(value.ToString());
+                    var value = source.stats.outbound[key];
+                    if (value == null)
+                    {
+                        continue;
+                    }
+                    var state = JsonUtils.Deserialize<V2rayMetricsVarsLink>(value.ToString());
 
-                if (key.StartsWith(Global.ProxyTag))
-                {
-                    server.ProxyUp += state.uplink / linkBase;
-                    server.ProxyDown += state.downlink / linkBase;
-                }
-                else if (key == Global.DirectTag)
-                {
-                    server.DirectUp = state.uplink / linkBase;
-                    server.DirectDown = state.downlink / linkBase;
+                    if (key.StartsWith(Global.ProxyTag))
+                    {
+                        server.ProxyUp += state.uplink / linkBase;
+                        server.ProxyDown += state.downlink / linkBase;
+                    }
+                    else if (key == Global.DirectTag)
+                    {
+                        server.DirectUp = state.uplink / linkBase;
+                        server.DirectDown = state.downlink / linkBase;
+                    }
                 }
             }
 
-            if (server.DirectDown < _serverSpeedItem.DirectDown || server.ProxyDown < _serverSpeedItem.ProxyDown)
+            if (source.stats.inbound != null)
+            {
+                //socks/socks2 为本地回环入站，socks3 为局域网入站
+                foreach (var key in source.stats.inbound.Keys.Cast<string>())
+                {
+                    var value = source.stats.inbound[key];
+                    if (value == null)
+                    {
+                        continue;
+                    }
+                    var state = JsonUtils.Deserialize<V2rayMetricsVarsLink>(value.ToString());
+
+                    if (key == EInboundProtocol.socks.ToString() || key == EInboundProtocol.socks2.ToString())
+                    {
+                        server.LocalUp += state.uplink / linkBase;
+                        server.LocalDown += state.downlink / linkBase;
+                    }
+                    else if (key == EInboundProtocol.socks3.ToString())
+                    {
+                        server.LanUp += state.uplink / linkBase;
+                        server.LanDown += state.downlink / linkBase;
+                    }
+                }
+            }
+
+            if (server.DirectDown < _serverSpeedItem.DirectDown
+                || server.ProxyDown < _serverSpeedItem.ProxyDown
+                || server.LocalDown < _serverSpeedItem.LocalDown
+                || server.LanDown < _serverSpeedItem.LanDown)
             {
                 _serverSpeedItem = new();
                 return null;
@@ -93,6 +124,10 @@ public class StatisticsXrayService
                 ProxyDown = server.ProxyDown - _serverSpeedItem.ProxyDown,
                 DirectUp = server.DirectUp - _serverSpeedItem.DirectUp,
                 DirectDown = server.DirectDown - _serverSpeedItem.DirectDown,
+                LocalUp = server.LocalUp - _serverSpeedItem.LocalUp,
+                LocalDown = server.LocalDown - _serverSpeedItem.LocalDown,
+                LanUp = server.LanUp - _serverSpeedItem.LanUp,
+                LanDown = server.LanDown - _serverSpeedItem.LanDown,
             };
             _serverSpeedItem = server;
             return curItem;

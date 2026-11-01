@@ -947,7 +947,8 @@ public class ConfigHandler
 
         foreach (var item in lstProfile)
         {
-            if (!lstKeep.Exists(i => CompareProfileItem(i, item, false)))
+            // 去重只比较 Address，忽略别名、端口等其他字段，避免同主机不同端口也被误判
+            if (!lstKeep.Exists(i => AreSameAddress(i.Address, item.Address)))
             {
                 lstKeep.Add(item);
             }
@@ -1057,6 +1058,18 @@ public class ConfigHandler
         {
             return string.Equals(a, b) || (string.IsNullOrEmpty(a) && string.IsNullOrEmpty(b));
         }
+    }
+
+    /// <summary>
+    /// Compare only the address of two profile items to determine if they point to the same host
+    /// </summary>
+    /// <param name="o">First profile item</param>
+    /// <param name="n">Second profile item</param>
+    /// <returns>True if addresses match, false otherwise</returns>
+    private static bool AreSameAddress(string? a, string? b)
+    {
+        return string.Equals(a, b, StringComparison.OrdinalIgnoreCase)
+            || (string.IsNullOrEmpty(a) && string.IsNullOrEmpty(b));
     }
 
     /// <summary>
@@ -1272,6 +1285,7 @@ public class ConfigHandler
                 EConfigType.VMess => await AddVMessServer(config, profileItem, false),
                 EConfigType.Shadowsocks => await AddShadowsocksServer(config, profileItem, false),
                 EConfigType.SOCKS => await AddSocksServer(config, profileItem, false),
+                EConfigType.HTTP => await AddHttpServer(config, profileItem, false),
                 EConfigType.Trojan => await AddTrojanServer(config, profileItem, false),
                 EConfigType.VLESS => await AddVlessServer(config, profileItem, false),
                 EConfigType.Hysteria2 => await AddHysteria2Server(config, profileItem, false),
@@ -1568,7 +1582,7 @@ public class ConfigHandler
     /// <param name="config">Current configuration</param>
     /// <param name="subItem">Subscription item to add or update</param>
     /// <returns>0 if successful, -1 if failed</returns>
-    public static async Task<int> AddSubItem(Config config, SubItem subItem)
+    public static async Task<int> AddSubItem(Config config, SubItem subItem, string? pingTestUrl = null, string? speedTestUrl = null)
     {
         var item = await AppHandler.Instance.GetSubItem(subItem.Id);
         if (item is null)
@@ -1608,14 +1622,17 @@ public class ConfigHandler
                 item.Sort = maxSort + 1;
             }
         }
-        if (await SQLiteHelper.Instance.ReplaceAsync(item) > 0)
-        {
-            return 0;
-        }
-        else
+        if (await SQLiteHelper.Instance.ReplaceAsync(item) <= 0)
         {
             return -1;
         }
+
+        // 订阅级测速 URL：任一填写，或该订阅先前配置过需清除时，写配置并持久化
+        var hasOverride = !string.IsNullOrEmpty(pingTestUrl) || !string.IsNullOrEmpty(speedTestUrl)
+            || config.SubSpeedTestItems?.Any(t => t.SubId == item.Id) == true;
+        return hasOverride
+            ? await SaveSubSpeedTestUrls(config, item.Id, pingTestUrl, speedTestUrl)
+            : 0;
     }
 
     /// <summary>
@@ -1664,7 +1681,57 @@ public class ConfigHandler
         await SQLiteHelper.Instance.DeleteAsync(item);
         await RemoveServersViaSubid(config, id, false);
 
+        // 同步清理订阅级测速 URL 覆盖
+        config.SubSpeedTestItems ??= new();
+        if (config.SubSpeedTestItems.RemoveAll(t => t.SubId == id) > 0)
+        {
+            await SaveConfig(config);
+        }
+
         return 0;
+    }
+
+    /// <summary>
+    /// 获取订阅级测速 URL 覆盖映射（懒初始化，兼容旧配置 JSON 缺省 null）。
+    /// </summary>
+    public static List<SubSpeedTestItem> GetSubSpeedTestItems(Config config)
+    {
+        config.SubSpeedTestItems ??= new();
+        return config.SubSpeedTestItems;
+    }
+
+    /// <summary>
+    /// 查询某订阅的测速 URL 覆盖；无覆盖时返回 (null, null)，表示走全局设置。
+    /// </summary>
+    public static (string? PingTestUrl, string? SpeedTestUrl) GetSubSpeedTestUrls(Config config, string? subId)
+    {
+        if (string.IsNullOrEmpty(subId))
+        {
+            return (null, null);
+        }
+        var item = GetSubSpeedTestItems(config).FirstOrDefault(t => t.SubId == subId);
+        return (item?.SpeedPingTestUrl, item?.SpeedTestUrl);
+    }
+
+    /// <summary>
+    /// 保存某订阅的测速 URL 覆盖（两个都留空即清除覆盖、回退全局），并持久化配置。
+    /// </summary>
+    public static async Task<int> SaveSubSpeedTestUrls(Config config, string subId, string? pingTestUrl, string? speedTestUrl)
+    {
+        if (string.IsNullOrEmpty(subId))
+        {
+            return -1;
+        }
+        var lst = GetSubSpeedTestItems(config);
+        var item = lst.FirstOrDefault(t => t.SubId == subId);
+        if (item is null)
+        {
+            item = new SubSpeedTestItem() { SubId = subId };
+            lst.Add(item);
+        }
+        item.SpeedPingTestUrl = string.IsNullOrEmpty(pingTestUrl) ? null : pingTestUrl;
+        item.SpeedTestUrl = string.IsNullOrEmpty(speedTestUrl) ? null : speedTestUrl;
+        return await SaveConfig(config);
     }
 
     /// <summary>

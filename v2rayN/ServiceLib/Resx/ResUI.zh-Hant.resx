@@ -1413,4 +1413,10 @@
   <data name="menuExportConfig" xml:space="preserve">
     <value>匯出設定檔</value>
   </data>
+  <data name="SpeedUp" xml:space="preserve">
+    <value>上行</value>
+  </data>
+  <data name="SpeedDown" xml:space="preserve">
+    <value>下行</value>
+  </data>
 </root>

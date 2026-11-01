@@ -86,7 +86,7 @@ public class StatusBarViewModel : MyReactiveObject
     public string SpeedProxyDisplay { get; set; }
 
     [Reactive]
-    public string SpeedDirectDisplay { get; set; }
+    public string SpeedInboundDisplay { get; set; }
 
     [Reactive]
     public bool EnableTun { get; set; }
@@ -495,8 +495,10 @@ public class StatusBarViewModel : MyReactiveObject
     {
         try
         {
-            SpeedProxyDisplay = string.Format(ResUI.SpeedDisplayText, Global.ProxyTag, Utils.HumanFy(update.ProxyUp), Utils.HumanFy(update.ProxyDown));
-            SpeedDirectDisplay = string.Format(ResUI.SpeedDisplayText, Global.DirectTag, Utils.HumanFy(update.DirectUp), Utils.HumanFy(update.DirectDown));
+            //上行/下行展示代理实时速率
+            SpeedProxyDisplay = $"{ResUI.SpeedUp}: {Utils.HumanFy(update.ProxyUp)}/s | {ResUI.SpeedDown}: {Utils.HumanFy(update.ProxyDown)}/s";
+            //local 为本地回环入站速率，局域网为 LAN 入站速率
+            SpeedInboundDisplay = $"{ResUI.LabLocal}: {Utils.HumanFy(update.LocalUp)}↑ {Utils.HumanFy(update.LocalDown)}↓ | {ResUI.LabLAN}: {Utils.HumanFy(update.LanUp)}↑ {Utils.HumanFy(update.LanDown)}↓";
         }
         catch
         {

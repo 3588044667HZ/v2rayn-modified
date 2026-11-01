@@ -10,6 +10,16 @@ public class ServerSpeedItem : ServerStatItem
     public long DirectUp { get; set; }
 
     public long DirectDown { get; set; }
+
+    // 本地回环入站(socks/socks2)的实时上传/下载速率
+    public long LocalUp { get; set; }
+
+    public long LocalDown { get; set; }
+
+    // 局域网入站(socks3)的实时上传/下载速率
+    public long LanUp { get; set; }
+
+    public long LanDown { get; set; }
 }
 
 [Serializable]

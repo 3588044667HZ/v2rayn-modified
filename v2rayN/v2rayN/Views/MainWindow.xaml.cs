@@ -18,6 +18,7 @@ public partial class MainWindow
     private static Config _config;
     private CheckUpdateView? _checkUpdateView;
     private BackupAndRestoreView? _backupAndRestoreView;
+    private AutoCtlServer? _autoCtl;
 
     public MainWindow()
     {
@@ -38,6 +39,18 @@ public partial class MainWindow
         MessageBus.Current.Listen<string>(EMsgCommand.SendSnackMsg.ToString()).Subscribe(DelegateSnackMsg);
         ViewModel = new MainWindowViewModel(UpdateViewHandler);
         Locator.CurrentMutable.RegisterLazySingleton(() => ViewModel, typeof(MainWindowViewModel));
+
+        // 本机控制口：爬虫可程序化“测速 + 自动切换活动节点”
+        try
+        {
+            _autoCtl = new AutoCtlServer(ViewModel);
+            _autoCtl.Start();
+        }
+        catch (Exception)
+        {
+            // 端口占用等情况仅告警，不影响主程序
+        }
+        this.Closed += (_, _) => _autoCtl?.Dispose();
 
         switch (_config.UiItem.MainGirdOrientation)
         {

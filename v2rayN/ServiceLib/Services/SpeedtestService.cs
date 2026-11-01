@@ -80,13 +80,17 @@ public class SpeedtestService
                 continue;
             }
 
+            var (pingTestUrl, speedTestUrl) = ConfigHandler.GetSubSpeedTestUrls(_config, it.Subid);
             lstSelected.Add(new ServerTestItem()
             {
                 IndexId = it.IndexId,
                 Address = it.Address,
                 Port = it.Port,
                 ConfigType = it.ConfigType,
-                QueueNum = selecteds.IndexOf(it)
+                QueueNum = selecteds.IndexOf(it),
+                Subid = it.Subid,
+                SpeedPingTestUrl = pingTestUrl,
+                SpeedTestUrl = speedTestUrl,
             });
         }
 
@@ -296,7 +300,10 @@ public class SpeedtestService
     private async Task<int> DoRealPing(DownloadService downloadHandle, ServerTestItem it)
     {
         var webProxy = new WebProxy($"socks5://{Global.Loopback}:{it.Port}");
-        var responseTime = await downloadHandle.GetRealPingTime(_config.SpeedTestItem.SpeedPingTestUrl, webProxy, 10);
+        var pingUrl = string.IsNullOrEmpty(it.SpeedPingTestUrl)
+            ? _config.SpeedTestItem.SpeedPingTestUrl
+            : it.SpeedPingTestUrl!;
+        var responseTime = await downloadHandle.GetRealPingTime(pingUrl, webProxy, 10);
 
         ProfileExHandler.Instance.SetTestDelay(it.IndexId, responseTime);
         UpdateFunc(it.IndexId, responseTime.ToString());
@@ -308,7 +315,9 @@ public class SpeedtestService
         UpdateFunc(it.IndexId, "", ResUI.Speedtesting);
 
         var webProxy = new WebProxy($"socks5://{Global.Loopback}:{it.Port}");
-        var url = _config.SpeedTestItem.SpeedTestUrl;
+        var url = string.IsNullOrEmpty(it.SpeedTestUrl)
+            ? _config.SpeedTestItem.SpeedTestUrl
+            : it.SpeedTestUrl!;
         var timeout = _config.SpeedTestItem.SpeedTestTimeout;
         await downloadHandle.DownloadDataAsync(url, webProxy, timeout, (success, msg) =>
         {

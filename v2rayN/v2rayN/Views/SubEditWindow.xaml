@@ -65,6 +65,8 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
@@ -312,6 +314,42 @@
                     AcceptsReturn="True"
                     Style="{StaticResource MyOutlinedTextBox}"
                     TextWrapping="Wrap" />
+
+                <TextBlock
+                    Grid.Row="13"
+                    Grid.Column="0"
+                    Margin="{StaticResource Margin4}"
+                    VerticalAlignment="Center"
+                    Style="{StaticResource ToolbarTextBlock}"
+                    Text="延迟测速 URL（订阅级）" />
+                <TextBox
+                    x:Name="txtSubPingTestUrl"
+                    Grid.Row="13"
+                    Grid.Column="1"
+                    Margin="{StaticResource Margin4}"
+                    VerticalAlignment="Center"
+                    AcceptsReturn="True"
+                    Style="{StaticResource MyOutlinedTextBox}"
+                    TextWrapping="Wrap"
+                    ToolTip="经该订阅节点访问的延迟测速地址；国际订阅推荐 https://www.gstatic.com/generate_204，国内订阅推荐 https://www.baidu.com 等；留空则使用全局设置" />
+
+                <TextBlock
+                    Grid.Row="14"
+                    Grid.Column="0"
+                    Margin="{StaticResource Margin4}"
+                    VerticalAlignment="Center"
+                    Style="{StaticResource ToolbarTextBlock}"
+                    Text="带宽测速 URL（订阅级）" />
+                <TextBox
+                    x:Name="txtSubSpeedTestUrl"
+                    Grid.Row="14"
+                    Grid.Column="1"
+                    Margin="{StaticResource Margin4}"
+                    VerticalAlignment="Center"
+                    AcceptsReturn="True"
+                    Style="{StaticResource MyOutlinedTextBox}"
+                    TextWrapping="Wrap"
+                    ToolTip="经该订阅节点下载测速的地址；留空则使用全局设置" />
             </Grid>
         </ScrollViewer>
     </DockPanel>
