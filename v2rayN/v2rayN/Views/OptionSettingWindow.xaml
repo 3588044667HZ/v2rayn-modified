@@ -1,4 +1,4 @@
-<reactiveui:ReactiveWindow
+﻿<reactiveui:ReactiveWindow
     x:Class="v2rayN.Views.OptionSettingWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -608,6 +608,23 @@
                             Grid.Column="1"
                             Margin="{StaticResource Margin8}"
                             HorizontalAlignment="Left" />
+
+                        <StackPanel
+                            Grid.Row="3"
+                            Grid.Column="2"
+                            Margin="{StaticResource Margin8}"
+                            VerticalAlignment="Center"
+                            Orientation="Horizontal">
+                            <TextBlock
+                                Margin="{StaticResource MarginRight8}"
+                                VerticalAlignment="Center"
+                                Style="{StaticResource ToolbarTextBlock}"
+                                Text="{x:Static resx:ResUI.TbSettingsMcpServer}" />
+                            <ToggleButton
+                                x:Name="togEnableMcp"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center" />
+                        </StackPanel>
 
                         <TextBlock
                             Grid.Row="4"

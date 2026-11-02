@@ -33,6 +33,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\ServiceLib\ServiceLib.csproj" />
+		<ProjectReference Include="..\McpHost\v2rayN.McpHost.csproj" />
 	</ItemGroup>
 
 </Project>

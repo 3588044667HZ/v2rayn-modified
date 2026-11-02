@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Reactive.Disposables;
 using System.Windows;
 using System.Windows.Controls;
@@ -10,6 +10,7 @@ using MaterialDesignThemes.Wpf;
 using ReactiveUI;
 using Splat;
 using v2rayN.Handler;
+using v2rayN.McpHost;
 
 namespace v2rayN.Views;
 
@@ -19,6 +20,7 @@ public partial class MainWindow
     private CheckUpdateView? _checkUpdateView;
     private BackupAndRestoreView? _backupAndRestoreView;
     private AutoCtlServer? _autoCtl;
+    private McpServerHost? _mcpHost;
 
     public MainWindow()
     {
@@ -43,7 +45,7 @@ public partial class MainWindow
         // 本机控制口：爬虫可程序化“测速 + 自动切换活动节点”
         try
         {
-            _autoCtl = new AutoCtlServer(ViewModel);
+            _autoCtl = new AutoCtlServer(ViewModel.AutoCtl);
             _autoCtl.Start();
         }
         catch (Exception)
@@ -51,6 +53,17 @@ public partial class MainWindow
             // 端口占用等情况仅告警，不影响主程序
         }
         this.Closed += (_, _) => _autoCtl?.Dispose();
+
+        // 进程内 MCP (Streamable HTTP) 服务
+        try
+        {
+            _mcpHost = McpServerHost.TryStart(ViewModel.AutoCtl, _config.GuiItem.EnableMcp);
+        }
+        catch (Exception)
+        {
+            // 端口占用等情况仅告警，不影响主程序
+        }
+        this.Closed += (_, _) => _mcpHost?.Dispose();
 
         switch (_config.UiItem.MainGirdOrientation)
         {

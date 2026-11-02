@@ -50,6 +50,7 @@ public class OptionSettingViewModel : MyReactiveObject
     [Reactive] public bool EnableStatistics { get; set; }
     [Reactive] public bool KeepOlderDedupl { get; set; }
     [Reactive] public bool DisplayRealTimeSpeed { get; set; }
+    [Reactive] public bool EnableMcp { get; set; }
     [Reactive] public bool EnableAutoAdjustMainLvColWidth { get; set; }
     [Reactive] public bool EnableUpdateSubOnlyRemarksExist { get; set; }
     [Reactive] public bool EnableSecurityProtocolTls13 { get; set; }
@@ -166,6 +167,7 @@ public class OptionSettingViewModel : MyReactiveObject
         AutoRun = _config.GuiItem.AutoRun;
         EnableStatistics = _config.GuiItem.EnableStatistics;
         DisplayRealTimeSpeed = _config.GuiItem.DisplayRealTimeSpeed;
+        EnableMcp = _config.GuiItem.EnableMcp;
         KeepOlderDedupl = _config.GuiItem.KeepOlderDedupl;
         EnableAutoAdjustMainLvColWidth = _config.UiItem.EnableAutoAdjustMainLvColWidth;
         EnableUpdateSubOnlyRemarksExist = _config.UiItem.EnableUpdateSubOnlyRemarksExist;
@@ -279,6 +281,7 @@ public class OptionSettingViewModel : MyReactiveObject
         }
         var needReboot = (EnableStatistics != _config.GuiItem.EnableStatistics
                           || DisplayRealTimeSpeed != _config.GuiItem.DisplayRealTimeSpeed
+                          || EnableMcp != _config.GuiItem.EnableMcp
                         || EnableDragDropSort != _config.UiItem.EnableDragDropSort
                         || EnableHWA != _config.GuiItem.EnableHWA
                         || CurrentFontFamily != _config.UiItem.CurrentFontFamily
@@ -325,6 +328,7 @@ public class OptionSettingViewModel : MyReactiveObject
         _config.GuiItem.AutoRun = AutoRun;
         _config.GuiItem.EnableStatistics = EnableStatistics;
         _config.GuiItem.DisplayRealTimeSpeed = DisplayRealTimeSpeed;
+        _config.GuiItem.EnableMcp = EnableMcp;
         _config.GuiItem.KeepOlderDedupl = KeepOlderDedupl;
         _config.UiItem.EnableAutoAdjustMainLvColWidth = EnableAutoAdjustMainLvColWidth;
         _config.UiItem.EnableUpdateSubOnlyRemarksExist = EnableUpdateSubOnlyRemarksExist;

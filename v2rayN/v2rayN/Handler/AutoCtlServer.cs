@@ -1,9 +1,9 @@
-using System.Net;
+﻿using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
 using System.Windows;
-using ServiceLib.ViewModels;
+using ServiceLib.Services;
 
 namespace v2rayN.Handler;
 
@@ -20,14 +20,14 @@ namespace v2rayN.Handler;
 /// </summary>
 public sealed class AutoCtlServer : IDisposable
 {
-    private readonly MainWindowViewModel _vm;
+    private readonly IAutoControlService _svc;
     private readonly TcpListener _listener;
     private readonly CancellationTokenSource _cts = new();
     private readonly string? _token;
 
-    public AutoCtlServer(MainWindowViewModel vm)
+    public AutoCtlServer(IAutoControlService svc)
     {
-        _vm = vm;
+        _svc = svc;
         _token = Environment.GetEnvironmentVariable("V2RAYN_CTL_TOKEN");
         var port = int.TryParse(Environment.GetEnvironmentVariable("V2RAYN_CTL_PORT"), out var p) ? p : 8193;
         _listener = new TcpListener(IPAddress.Loopback, port);
@@ -149,9 +149,9 @@ public sealed class AutoCtlServer : IDisposable
     {
         return path switch
         {
-            "/status" => await _vm.GetAutoStatus(),
-            "/list" => await _vm.GetAutoTestNodes(GetSub(query)),
-            "/pick" => await _vm.AutoPickBestServerAsync(GetSub(query), query.GetValueOrDefault("action", "Realping")),
+            "/status" => await _svc.GetAutoStatus(),
+            "/list" => await _svc.GetAutoTestNodes(GetSub(query)),
+            "/pick" => await _svc.AutoPickBestServerAsync(GetSub(query), query.GetValueOrDefault("action", "Realping")),
             _ => new Dictionary<string, object?> { ["ok"] = false, ["msg"] = "unknown path" },
         };
     }

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -713,6 +713,9 @@
   </data>
   <data name="TbSettingsDisplayRealTimeSpeed" xml:space="preserve">
     <value>Display real-time speed (requires restart)</value>
+  </data>
+  <data name="TbSettingsMcpServer" xml:space="preserve">
+    <value>MCP server (requires restart)</value>
   </data>
   <data name="TbSettingsKeepOlderDedupl" xml:space="preserve">
     <value>Keep older entries when de-duplicating</value>

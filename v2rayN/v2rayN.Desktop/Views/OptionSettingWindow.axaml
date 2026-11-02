@@ -1,4 +1,4 @@
-<Window
+﻿<Window
     x:Class="v2rayN.Desktop.Views.OptionSettingWindow"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -391,6 +391,22 @@
                             Grid.Column="1"
                             Margin="{StaticResource Margin4}"
                             HorizontalAlignment="Left" />
+
+                        <StackPanel
+                            Grid.Row="3"
+                            Grid.Column="2"
+                            Margin="{StaticResource Margin4}"
+                            VerticalAlignment="Center"
+                            Orientation="Horizontal">
+                            <TextBlock
+                                Margin="{StaticResource MarginRight8}"
+                                VerticalAlignment="Center"
+                                Text="{x:Static resx:ResUI.TbSettingsMcpServer}" />
+                            <ToggleSwitch
+                                x:Name="togEnableMcp"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center" />
+                        </StackPanel>
 
                         <TextBlock
                             Grid.Row="4"

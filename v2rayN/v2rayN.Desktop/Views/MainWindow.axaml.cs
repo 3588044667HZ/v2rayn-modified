@@ -1,4 +1,4 @@
-using System.Reactive.Disposables;
+﻿using System.Reactive.Disposables;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -13,6 +13,7 @@ using ReactiveUI;
 using Splat;
 using v2rayN.Desktop.Common;
 using v2rayN.Desktop.Handler;
+using v2rayN.McpHost;
 
 namespace v2rayN.Desktop.Views;
 
@@ -23,6 +24,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
     private CheckUpdateView? _checkUpdateView;
     private BackupAndRestoreView? _backupAndRestoreView;
     private bool _blCloseByUser = false;
+    private McpServerHost? _mcpHost;
 
     public MainWindow()
     {
@@ -41,6 +43,17 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         MessageBus.Current.Listen<string>(EMsgCommand.SendSnackMsg.ToString()).Subscribe(DelegateSnackMsg);
         ViewModel = new MainWindowViewModel(UpdateViewHandler);
         Locator.CurrentMutable.RegisterLazySingleton(() => ViewModel, typeof(MainWindowViewModel));
+
+        // 进程内 MCP (Streamable HTTP) 服务
+        try
+        {
+            _mcpHost = McpServerHost.TryStart(ViewModel.AutoCtl, _config.GuiItem.EnableMcp);
+        }
+        catch (Exception)
+        {
+            // 端口占用等情况仅告警，不影响主程序
+        }
+        this.Closed += (_, _) => _mcpHost?.Dispose();
 
         switch (_config.UiItem.MainGirdOrientation)
         {

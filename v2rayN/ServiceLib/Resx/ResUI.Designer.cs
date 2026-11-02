@@ -3031,6 +3031,15 @@ namespace ServiceLib.Resx {
         }
         
         /// <summary>
+        ///   查找类似 MCP server (requires restart) 的本地化字符串。
+        /// </summary>
+        public static string TbSettingsMcpServer {
+            get {
+                return ResourceManager.GetString("TbSettingsMcpServer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 Outbound DNS address 的本地化字符串。
         /// </summary>
         public static string TbSettingsDomainDNSAddress {
